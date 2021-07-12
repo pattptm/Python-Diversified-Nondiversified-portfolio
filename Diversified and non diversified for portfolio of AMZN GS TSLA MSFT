@@ -1,0 +1,35 @@
+import yfinance as yf
+import numpy as np
+
+#Assign the weight for portfolio
+weight=np.array([0.25,0.25,0.25,0.25])
+#calculate diversified portfolio = portfolio variance-weighted annual variance(delete unsystematic risk in the port)
+tickers=['amzn','tsla','gs','msft']
+data= yf.download(tickers,start='2018-01-01',end='2020-12-30')['Adj Close']
+print(data)
+#find annual variance of each company
+sec_logrt=np.log(data/data.shift(1))
+print(sec_logrt)
+AMZN_annualvar=sec_logrt['AMZN'].var()*250
+TSLA_annualvar=sec_logrt['TSLA'].var()*250
+GS_annualvar=sec_logrt['GS'].var()*250
+MSFT_annualvar=sec_logrt['MSFT'].var()*250
+print('Variance of AMZN=',AMZN_annualvar)
+print('Variance of TSLA=',TSLA_annualvar)
+print('Variance of GS =',GS_annualvar)
+print('Variance of MSFT=',MSFT_annualvar)
+#Calculate Portfolio Variance
+sec_covmatrix=sec_logrt.cov()
+print(sec_covmatrix)
+#Calculate Portfolio Variance
+weight=np.array([0.25,0.25,0.25,0.25])
+port_var= np.dot(weight.T,np.dot(sec_covmatrix*250,weight))
+print('Portfolio Variance=',port_var)
+
+#Calculate Diversified portfolio= the remain is systematic risk only
+diversified_port=port_var-(weight[0]**2*AMZN_annualvar)-(weight[1]**2*TSLA_annualvar)-(weight[2]**2*GS_annualvar)-(weight[3]**2*MSFT_annualvar)
+print('Diversified Portfolio=',diversified_port)
+
+#Non Diversified portfolio = sum of weighted annual variance
+non_diversifiedport=(weight[0]**2*AMZN_annualvar)+(weight[1]**2*TSLA_annualvar)+(weight[2]**2*GS_annualvar)+(weight[3]**2*MSFT_annualvar)
+print('Non Diversified Portfolio=',non_diversifiedport)
